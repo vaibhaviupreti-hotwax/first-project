@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+
+    <!-- CREATE Tutorial3 with Business Logic -->
+    <service verb="create" noun="Tutorial3" type="inline">
+
+        <!-- INPUT -->
+        <in-parameters>
+            <!-- Explicit field (automatically validated by Moqui because required="true") -->
+            <parameter name="description" required="true"/>
+
+            <!-- Map entity fields -->
+            <auto-parameters entity-name="tutorial3.Tutorial3" include="nonpk"/>
+        </in-parameters>
+
+        <!-- OUTPUT -->
+        <out-parameters>
+            <parameter name="tutorialId" required="true"/>
+            <parameter name="message"/>
+        </out-parameters>
+
+        <!-- BUSINESS LOGIC -->
+        <actions>
+
+            <!-- 1. Create entity object -->
+            <entity-make-value entity-name="tutorial3.Tutorial3" value-field="tutorial3"/>
+
+            <!-- 2. Set values (automatically sets 'description' and other matching in-parameters) -->
+            <entity-set value-field="tutorial3" include="all"/>
+
+            <!-- 3. Generate PK if not provided -->
+            <if condition="!tutorial3.tutorialId">
+                <entity-sequenced-id-primary value-field="tutorial3"/>
+            </if>
+
+            <!-- 4. Save to DB -->
+            <entity-create value-field="tutorial3"/>
+
+            <!-- 5. Generate outputs (Success message and new ID) -->
+            <set field="tutorialId" from="tutorial3.tutorialId"/>
+            <set field="message" value="Tutorial3 created successfully"/>
+
+            <!-- 6. Logging -->
+            <log level="info" message="Created Tutorial3 with ID: ${tutorial3.tutorialId}"/>
+
+        </actions>
+    </service>
+
+    <!--READ-->
+    <!-- READ (Get a single record) -->
+    <service verb="get" noun="Tutorial3" type="inline">
+        <description>Get a single Tutorial3 record by ID</description>
+
+        <!-- INPUT: Let Moqui know it MUST receive a tutorialId to search for -->
+        <in-parameters>
+            <parameter name="tutorialId" required="true"/>
+        </in-parameters>
+
+        <!-- OUTPUT: Moqui will return the record data -->
+        <out-parameters>
+            <parameter name="tutorial3" type="EntityValue"/>
+        </out-parameters>
+
+        <!-- LOGIC -->
+        <actions>
+            <!-- Search the DB for exactly one record that matches the input ID -->
+            <entity-find-one entity-name="tutorial3.Tutorial3" value-field="tutorial3"/>
+
+            <!-- Output an error if nothing was found -->
+            <if condition="!tutorial3">
+                <return error="true" message="Record with ID ${tutorialId} not found"/>
+            </if>
+        </actions>
+    </service>
+
+    <!-- DELETE a single record -->
+    <service verb="delete" noun="Tutorial3" type="inline">
+        <description>Delete a Tutorial3 record by ID</description>
+
+        <!-- INPUT: Provide the ID to delete -->
+        <in-parameters>
+            <parameter name="tutorialId" required="true"/>
+        </in-parameters>
+
+        <!-- BUSINESS LOGIC -->
+        <actions>
+            <!-- 1. Assemble the object using just the ID -->
+            <entity-make-value entity-name="tutorial3.Tutorial3" value-field="tutorial3"
+                               map="[tutorialId:tutorialId]"/>
+
+            <!-- 2. Delete it from the Database -->
+            <entity-delete value-field="tutorial3"/>
+
+            <!-- 3. Logging -->
+            <log level="info" message="Deleted Tutorial3 with ID: ${tutorialId}"/>
+        </actions>
+    </service>
+
+    <!-- UPDATE a single record -->
+    <service verb="update" noun="Tutorial3" type="inline">
+        <description>Update a Tutorial3 record by ID</description>
+
+        <!-- INPUT: Must have ID, plus any other fields they want to change -->
+        <in-parameters>
+            <parameter name="tutorialId" required="true"/>
+            <auto-parameters entity-name="tutorial3.Tutorial3" include="nonpk"/>
+        </in-parameters>
+
+        <!-- BUSINESS LOGIC -->
+        <actions>
+            <!-- 1. Search the Database for the existing record -->
+            <entity-find-one entity-name="tutorial3.Tutorial3" value-field="tutorial3"/>
+
+            <if condition="!tutorial3">
+                <return error="true" message="Cannot update: Record with ID ${tutorialId} not found!"/>
+            </if>
+
+            <!-- 2. Automatically apply the new inputs to the record -->
+            <entity-set value-field="tutorial3" include="nonpk"/>
+
+            <!-- 3. Save the changes to the Database -->
+            <entity-update value-field="tutorial3"/>
+
+            <!-- 4. Logging -->
+            <log level="info" message="Updated Tutorial3 with ID: ${tutorialId}"/>
+        </actions>
+    </service>
+
+
+</services>

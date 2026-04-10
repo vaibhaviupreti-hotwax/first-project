@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd">
+
+    <!-- ============================================== -->
+    <!-- ? TRANSITION: Handles User Form Submissions -->
+    <!-- ============================================== -->
+    <transition name="createTutorial">
+        <service-call name="tutorial3.TutorialServices.create#Tutorial3"/>
+        <default-response url="."/>
+    </transition>
+
+    <!-- Handles the submission of the Delete button -->
+    <transition name="deleteTutorial">
+        <service-call name="tutorial3.TutorialServices.delete#Tutorial3"/>
+        <default-response url="."/>
+    </transition>
+
+    <!-- Handles the submission of the Edit form -->
+    <transition name="updateTutorial">
+        <service-call name="tutorial3.TutorialServices.update#Tutorial3"/>
+        <default-response url="."/>
+    </transition>
+
+
+    <!-- ============================================== -->
+    <!-- ? ACTIONS: Fetches Data before UI Renders -->
+    <!-- ============================================== -->
+    <actions>
+        <!-- Fetches all records from the Database to supply the ListTutorials below -->
+        <entity-find entity-name="tutorial3.Tutorial3" list="tutorialList">
+            <search-form-inputs/>
+        </entity-find>
+    </actions>
+
+    <!-- ============================================== -->
+    <!-- ? UI WIDGETS: What the User Actually Sees -->
+    <!-- ============================================== -->
+    <widgets>
+
+        <!-- 1. CREATE DIALOG BUTTON (Top of page) -->
+        <container-dialog id="CreateTutorialDialog" button-text="Create Tutorial">
+            <form-single name="CreateTutorial" transition="createTutorial">
+                <auto-fields-entity entity-name="tutorial3.Tutorial3" field-type="edit"/>
+                <field name="submitButton">
+                    <default-field title="Create">
+                        <submit/>
+                    </default-field>
+                </field>
+            </form-single>
+        </container-dialog>
+
+        <!-- 2. DATA TABLE LIST (Shows all tutorial3 records) -->
+        <form-list name="ListTutorials"
+                   list="tutorialList"
+                   header-dialog="true"
+                   skip-form="true">
+
+            <!-- READ SINGLE TRIGGER: View button for every row -->
+            <field name="viewButton">
+                <default-field title="View Details">
+                    <!-- A unique popup container for every row using its ID -->
+                    <container-dialog id="ViewTutorialDialog_${tutorialId}" button-text="View">
+
+                        <!-- The Form inside the popup pulls from the 'context' of that exact row -->
+                        <form-single name="ViewTutorial" map="context">
+                            <field name="tutorialId">
+                                <default-field title="Tutorial ID"><display/></default-field>
+                            </field>
+                            <field name="description">
+                                <default-field title="Description"><display/></default-field>
+                            </field>
+                        </form-single>
+
+                    </container-dialog>
+                </default-field>
+            </field>
+
+            <!-- NEW: Delete Button -->
+            <field name="deleteButton">
+                <default-field title="Action">
+                    <link url="deleteTutorial" text="Delete" parameter-map="[tutorialId:tutorialId]"
+                          confirmation="Are you absolutely sure you want to delete this record?"/>
+                </default-field>
+            </field>
+
+
+            <!-- EDIT BUTTON (UPDATE) -->
+            <field name="editButton">
+                <default-field title="Edit">
+                    <!-- Unique popup for editing THIS specific row -->
+                    <container-dialog id="EditTutorialDialog_${tutorialId}" button-text="Edit">
+
+                        <!-- 1. Sets 'updateTutorial' as the transition endpoint -->
+                        <!-- 2. 'map="context"' grabs the row's existing data to pre-fill the form! -->
+                        <form-single name="EditTutorial" transition="updateTutorial" map="context">
+
+                            <!-- The ID must be sent to the server. <display> shows it, <hidden> submits it! -->
+                            <field name="tutorialId">
+                                <default-field><display/><hidden/></default-field>
+                            </field>
+
+                            <!-- Notice we use <text-line> here instead of <display> so the user can type! -->
+                            <field name="description">
+                                <default-field><text-line/></default-field>
+                            </field>
+
+                            <!-- The Submit button -->
+                            <field name="submitButton">
+                                <default-field title="Save Changes"><submit/></default-field>
+                            </field>
+
+                        </form-single>
+
+                    </container-dialog>
+                </default-field>
+            </field>
+
+            <!-- Your existing View and Delete buttons go here... -->
+            <!-- Your existing auto-fields go here... -->
+
+        <!--            =========================================-->
+
+            <!-- Automatically displays the rest of the database fields as columns -->
+            <auto-fields-entity entity-name="tutorial3.Tutorial3" field-type="find-display"/>
+
+        </form-list>
+
+    </widgets>
+</screen>

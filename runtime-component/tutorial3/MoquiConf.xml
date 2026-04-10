@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-3.xsd">
+    <screen-facade>
+        <screen location="component://webroot/screen/webroot/apps.xml">
+            <subscreens-item name="tutorial3" menu-title="Tutorial3" menu-index="99"
+                             location="component://tutorial3/screen/tutorial3.xml"/>
+        </screen>
+    </screen-facade>
+</moqui-conf>

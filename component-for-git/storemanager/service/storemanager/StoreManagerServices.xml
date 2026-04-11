@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+    
+    <!-- The "Wow Factor" Business Logic -->
+    <service verb="record" noun="QuickSale">
+        <description>Subtracts 1 from current stock and adds 1 to sold quantity, if stock allows.</description>
+        <in-parameters>
+            <parameter name="productId" required="true"/>
+        </in-parameters>
+        <actions>
+            <!-- Fetch the specific product from the database -->
+            <entity-find-one entity-name="storemanager.SmProduct" value-field="product">
+                <field-map field-name="productId"/>
+            </entity-find-one>
+            
+            <if condition="product == null">
+                <return error="true" message="Product not found!"/>
+            </if>
+            
+            <!-- Business Validation: Cannot sell what we don't have -->
+            <if condition="product.currentStock &lt;= 0">
+                <return error="true" message="Cannot process sale. Product ${product.productName} is currently out of stock!"/>
+            </if>
+            
+            <!-- Perform the real-time state manipulation -->
+            <set field="product.currentStock" from="product.currentStock - 1"/>
+            <set field="product.soldQuantity" from="(product.soldQuantity ?: 0) + 1"/>
+            
+            <!-- Automatically update the record in the database -->
+            <entity-update value-field="product"/>
+            
+            <message type="success">Sale Recorded for ${product.productName}! Watch the revenue increase.</message>
+        </actions>
+    </service>
+</services>
